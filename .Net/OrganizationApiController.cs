@@ -36,120 +36,6 @@ namespace Sabio.Web.Api.Controllers
 			_locationService = locationService;
 		}
 
-		[HttpDelete("{id:int}")]
-		public ActionResult<ItemResponse<int>> Delete(int id)
-		{
-			int code = 200;
-			BaseResponse response = null;
-
-			try
-			{
-				int userId = _authService.GetCurrentUserId();
-				_service.Delete(id, userId);
-				response = new SuccessResponse();
-			}
-			catch (Exception ex)
-			{
-				code = 500;
-				response = new ErrorResponse(ex.Message);
-			}
-			return StatusCode(code, response);
-		}
-
-		[HttpPost]
-		public ActionResult<ItemResponse<int>> Create(OrganizationAddRequest model)
-		{
-			ObjectResult result = null;
-			try
-			{
-				int userId = _authService.GetCurrentUserId();
-				int locationId = _locationService.Add(model, userId);
-				if (locationId > 1)
-				{
-					model.PrimaryLocationId = locationId;
-                    int id = _service.Add(model, userId);
-                    ItemResponse<int> response = new ItemResponse<int>() { Item = id };
-                    result = Created201(response);
-                } else
-				{
-                    ErrorResponse response = new ErrorResponse("Register Failed");
-                    result = StatusCode(500, response);
-                }
-			}
-			catch (Exception ex)
-			{
-				base.Logger.LogError(ex.ToString());
-				ErrorResponse response = new ErrorResponse(ex.Message);
-
-				result = StatusCode(500, response);
-			}
-
-
-			return result;
-		}
-
-		[HttpPut("loc/{id:int}")]
-		public ActionResult<ItemResponse<int>> UpdateWithLocation(OrganizationLocationUpdateRequest model)
-		{
-			int code = 200;
-			BaseResponse response = null;
-			
-			try
-			{
-				int userId = _authService.GetCurrentUserId();
-				_service.UpdateWithLocation(model, userId);
-				response = new SuccessResponse();
-			}
-			catch (Exception ex)
-			{
-				code = 500;
-				response = new ErrorResponse(ex.Message);
-			}
-			return StatusCode(code, response);
-		}
-
-		[HttpPut("{id:int}")]
-		public ActionResult<ItemResponse<int>> Update(OrganizationUpdateRequest model)
-		{
-			int code = 200;
-
-			BaseResponse response = null;
-
-			try
-			{
-				int userId = _authService.GetCurrentUserId();
-				_service.Update(model, userId);
-
-				response = new SuccessResponse();
-			}
-			catch (Exception ex)
-			{
-				code = 500;
-				response = new ErrorResponse(ex.Message);
-			}
-			return StatusCode(code,response);
-		}
-
-		[HttpPut("{id:int}/validation")]
-		public ActionResult<ItemResponse<int>> UpdateValidation(bool isValidated, int id)
-		{
-			int code = 200;
-			BaseResponse response = null;
-
-			try 
-			{
-				int userId = _authService.GetCurrentUserId();
-				_service.ToggleValidation(isValidated, id, userId);
-				response = new SuccessResponse();
-			}
-			catch (Exception ex)
-			{
-				code = 500;
-				response = new ErrorResponse(ex.Message);
-			}
-			return StatusCode(code, response);
-		}
-
 		[HttpGet("current")]
 		public ActionResult<ItemResponse<Organization>> GetByUserId()
 		{
@@ -252,36 +138,6 @@ namespace Sabio.Web.Api.Controllers
 		
 		}
 
-		[HttpGet("paginate/valid")]
-		[AllowAnonymous]
-		public ActionResult<ItemResponse<Paged<Organization>>> GetAllPaginationValid(int pageIndex, int pageSize)
-		{
-			int code = 200;
-			BaseResponse response = null;
-			try
-			{
-				Paged<Organization> page = _service.GetAllValid(pageIndex, pageSize);
-				if (page == null)
-				{
-					code = 404;
-					response = new ErrorResponse("App Resource not found.");
-				}
-				else
-				{
-					response = new ItemResponse<Paged<Organization>> { Item = page };
-				}
-			}
-			catch (Exception ex)
-			{
-				code = 500;
-				response = new ErrorResponse(ex.Message);
-				base.Logger.LogError(ex.ToString());
-			}
-			return StatusCode(code, response);
-		}
-
-
-
         [HttpGet]
         public ActionResult<ItemsResponse<Organization>> GetAllNoPag()
         {
@@ -380,34 +236,6 @@ namespace Sabio.Web.Api.Controllers
 
 		}
 
-		[HttpGet("search/valid")]
-		public ActionResult<ItemResponse<Paged<Organization>>> SearchValid(int pageIndex, int pageSize, string query)
-		{
-			int code = 200;
-			BaseResponse response = null;
-
-			try
-			{
-				Paged<Organization> page = _service.SearchValid(pageIndex, pageSize, query);
-				if (page == null)
-				{
-					code = 404;
-					response = new ErrorResponse("Records not found.");
-				}
-				else
-				{
-					response = new ItemResponse<Paged<Organization>> { Item = page };
-				}
-			}
-			catch (Exception ex)
-			{
-				code = 500;
-				response = new ErrorResponse(ex.Message);
-				base.Logger.LogError(ex.ToString());
-			}
-			return StatusCode(code, response);
-		}
-
         [HttpGet("currentorgid")]
         public ActionResult<ItemResponse<IUserAuthData>> GetUserAuthDataOrg()
         {
@@ -465,10 +293,9 @@ namespace Sabio.Web.Api.Controllers
 			}
 
             return StatusCode(code, response);
-
         }
 
-		[HttpDelete("orgmember/{Id:int}")]
+	[HttpDelete("orgmember/{Id:int}")]
         [Authorize(Roles = "SysAdmin, OrgAdmin")]
 		public ActionResult<SuccessResponse> DeleteOrgMember(int id)
 		{
@@ -488,7 +315,7 @@ namespace Sabio.Web.Api.Controllers
 			return StatusCode(code, response);
 		}
 
-		[HttpPut("orgmember/roles")]
+	[HttpPut("orgmember/roles")]
         [Authorize(Roles = "SysAdmin, OrgAdmin")]
 		public ActionResult<SuccessResponse> UpdateOrgMemberRoles(OrgMemberRoleUpdate model)
 		{
